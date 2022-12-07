@@ -5,6 +5,7 @@
 
 <script>
 const mapboxgl = require('mapbox-gl');
+// var MapboxInspect = require('mapbox-gl-inspect');
 export default {
     name: 'Map',
     props: {
@@ -157,7 +158,7 @@ export default {
         initMap() {
             mapboxgl.accessToken =
                 'pk.eyJ1Ijoic3RldmFnZSIsImEiOiJjam5kcGMzNjMydnNxM2ttc2toamo3Yzk2In0.JLncOwxdMGtouRcPNJtnbQ';
-            const aus = window.location.hash.match(/aus/);
+            // const aus = window.location.hash.match(/aus/);
             // const sf = window.location.hash.match(/sf/);
             // const center = {
             //     aus: [145, -37.8],
@@ -177,6 +178,15 @@ export default {
             });
             map.addControl(new mapboxgl.NavigationControl());
             require('mapbox-gl-utils').init(map);
+            // map.addControl(new MapboxInspect({
+            //     queryParameters: {
+            //         layers: ['fr_40_region_2022']
+            //     },
+            //     popup: new mapboxgl.Popup({
+            //         closeButton: false,
+            //         closeOnClick: false
+            //     })
+            // }));
 
             window.map = map;
             this.map = map;
@@ -198,6 +208,8 @@ export default {
                 this.$emit('values-update', values);
             });
             map.on('moveend', () => this.$emit('move'));
+            map.on('zoom', () => this.$emit('zoom'));
+            this.$emit('zoom');
         },
     },
 };

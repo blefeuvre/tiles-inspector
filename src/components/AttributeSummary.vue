@@ -3,12 +3,13 @@
     table
         tr
             td(style="width: 20px")
-            th Value of "{{attributeName}}"
+            th Value
             th Count
             th.type Pt
             th.type Ln
             th.type Po
-        tr(v-for="([value, [count, points, linestrings, polygons]]) of sortedValueCounts" @mouseover="$emit('hoverValue', value, count)" @mouseout="$emit('hoverValue')")
+            th.type Mpo
+        tr(v-for="([value, [count, points, linestrings, polygons, multipolygons]]) of sortedValueCounts" @mouseover="$emit('hoverValue', value, count)" @mouseout="$emit('hoverValue')")
             td(style="width: 20px")
                 span(v-if="value===focusedValue") &rarr;
             td {{ value }}
@@ -18,7 +19,9 @@
             td.type
                 span(v-if="linestrings") {{ linestrings === count ? '✔︎' : linestrings }}
             td.type
-                span(v-if="polygons") {{ polygons === count ? '✔︎' : polygons }}
+                span(v-if="polygons") {{ polygons }}
+            td.type
+                span(v-if="multipolygons") {{ multipolygons }}
 </template>
 
 <script>

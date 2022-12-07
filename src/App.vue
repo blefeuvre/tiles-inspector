@@ -2,42 +2,29 @@
 
 #app
   #top
-    h1 Vector Inspector
-    | Look inside the contents of vector tiles from third party sources!
-    .credit By Steve Bennett (@stevage1) - <a href="http://hire.stevebennett.me">hire.stevebennett.me</a>
-    | Paste the URL of one vector tile (
-    code .../8/531/489.pbf
-    | ) OR a TileJSON endpoint (
-    code .../index.json
-    | )
-    br
-    input#url(v-model="url" placeholder="https://tiles.planninglabs.nyc/data/v3/14/4826/6157.pbf")
-    br
-    label
-        input#cors(v-model="cors" type="checkbox")
-        small Use CORS proxy
-    //- label
-    //-     input(v-model="tms" type="checkbox")
-    //-     small Use TMS tiling scheme (flipped Y).
-    label
-        input(v-model="zyx" type="checkbox")
-        small URL is Z/Y/X (not Z/X/Y)
+    SelectSource(@select="updateSource")
+
   #middle
     #sidepanel
+      h3 Params
+      input(id="showBoundaries" type="checkbox" v-model="showBoundaries")
+      label(for="showBoundaries") Show tile boundaries
+      h3 Info
+      InfoMapBox(:zoom="zoom")
       h3 Layers
       #layers
         AttributesTable(:layers="layers" :values="values" @clickAttribute="summariseAttribute" :focusedAttribute="focusedAttribute" :focusedLayer="focusedLayer")
-        AttributeSummary(:sortedValueCounts="sortedValueCounts" :attributeName="focusedAttribute" @hoverValue="value => { focusedValue = value}" :focusedValue="focusedValue")
-        input(id="showbBoundaries" type="checkbox" v-model="showBoundaries")
-        label(for="showBoundaries") Show tile boundaries
-    MapComponent(:layers="layers" :xyzUrl="xyzUrl" :tms="tms" @values-update="updateValues" @move="updateAttributeSummary" :focusValue="focusedValue" :focusLayer="focusedLayer" :focusField="focusedAttribute")
+        //- AttributeSummary(:sortedValueCounts="sortedValueCounts" :attributeName="focusedAttribute" @hoverValue="value => { focusedValue = value}" :focusedValue="focusedValue")
+    MapComponent(:layers="layers" :xyzUrl="xyzUrl" :tms="tms" @values-update="updateValues" @move="updateAttributeSummary" @zoom="updateZoom" :focusValue="focusedValue" :focusLayer="focusedLayer" :focusField="focusedAttribute")
   #bottom
-    | Source: <a href="https://github.com/stevage/vector-inspector">https://github.com/stevage/vector-inspector</a>
+    .credit Forked from <a href="https://github.com/stevage/vector-inspector">github.com/stevage/vector-inspector</a> - Steve Bennett (@stevage1) 
 </template>
 
 <script>
 require('mapbox-gl-inspect/dist/mapbox-gl-inspect.css');
 import AttributesTable from './components/AttributesTable';
+import InfoMapBox from './components/InfoMapBox';
+import SelectSource from './components/SelectSource';
 import AttributeSummary from '@/components/AttributeSummary.vue';
 import MapComponent from '@/components/Map.vue';
 
@@ -45,7 +32,6 @@ const request = require('request');
 const VectorTile = require('@mapbox/vector-tile').VectorTile;
 const Pbf = require('pbf');
 const zlib = require('zlib');
-const MapboxInspect = require('mapbox-gl-inspect');
 const cssColors = [
     '#1f78b4',
     // '#b2df8a',
@@ -71,10 +57,12 @@ export default {
     components: {
         AttributesTable,
         AttributeSummary,
+        InfoMapBox,
+        SelectSource,
         MapComponent,
     },
     data: () => ({
-        url: (window.location.hash.match(/url=([^&]+)/) || [])[1] || '',
+        url: "",
         layers: [],
         values: {},
         cors: false,
@@ -87,6 +75,7 @@ export default {
         focusedValue: undefined,
         valueCounts: {},
         sortedValueCounts: [],
+        zoom: undefined,
     }),
     mounted() {
         window.setTimeout(() => {
@@ -164,17 +153,24 @@ export default {
                 geometry: { type },
             } of features) {
                 const value = properties[this.focusedAttribute];
-                const counts = this.valueCounts.get(value) || [0, 0, 0, 0]; // total, point, line, polygon
+                const counts = this.valueCounts.get(value) || [0, 0, 0, 0, 0]; // total, point, line, polygon, multipolygon
                 const countFieldIndex =
-                    ['Point', 'LineString', 'Polygon'].indexOf(type) + 1;
+                    ['Point', 'LineString', 'Polygon', 'MultiPolygon'].indexOf(type) + 1;
                 counts[0] += 1;
                 counts[countFieldIndex] += 1;
 
                 this.valueCounts.set(value, counts);
             }
             this.sortedValueCounts = Array.from(
-                this.valueCounts.entries(),
-            ).sort(([, [a]], [, [b]]) => b - a);
+                this.valueCounts.entries()
+            ).sort(([a], [b]) => a > b ? 1 : -1);
+        },
+        updateZoom() {
+            this.zoom = Math.floor(window.map.getZoom());
+        },
+        updateSource(source) {
+            this.url = "http://localhost:8080"+source+"1/1/1.pbf";
+            console.log(this.url);
         },
         updateValues(newValues) {
             this.values = newValues;

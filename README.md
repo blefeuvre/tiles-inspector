@@ -5,10 +5,23 @@
 npm install
 ```
 
+## Data copy
+
+You must move/copy/link tiles directories to a `vectortiles` directory
+```
+ln -s <data>/georef/out/vectortiles vectortiles
+```
+
 ### Compiles and hot-reloads for development
 ```
 npm run serve
 ```
+
+### Go to
+
+http://localhost:8080
+
+# Other
 
 ### Compiles and minifies for production
 ```

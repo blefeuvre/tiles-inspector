@@ -5,7 +5,7 @@
         table#attributes(v-show="!collapse[layer.name]")
             tr#attribute(v-for="key in layer._keys" @click="$emit('clickAttribute', key, layer.name)")
                 td(style="width: 20px")
-                    span(v-if="key === focusedAttribute && focusedLayer===layer.name") →
+                    //- span(v-if="key === focusedAttribute && focusedLayer===layer.name") →
 
                 td.key {{ key }}
                 td.key {{ values[layer.name]&& values[layer.name][key] }}
