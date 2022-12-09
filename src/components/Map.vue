@@ -133,6 +133,7 @@ export default {
                 type: 'vector',
                 tiles: [this.xyzUrl],
                 scheme: this.tms ? 'tms' : 'xyz',
+                maxzoom: 9,
             });
         },
         addLayers(oldStyles = []) {
@@ -176,7 +177,9 @@ export default {
                 maxTileCacheSize: 0,
                 hash: 'loc',
             });
-            map.addControl(new mapboxgl.NavigationControl());
+            map.addControl(new mapboxgl.NavigationControl({
+                showCompass: false,
+            }));
             require('mapbox-gl-utils').init(map);
             // map.addControl(new MapboxInspect({
             //     queryParameters: {

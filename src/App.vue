@@ -9,6 +9,12 @@
       h3 Params
       input(id="showBoundaries" type="checkbox" v-model="showBoundaries")
       label(for="showBoundaries") Show tile boundaries
+      br
+      input(id="fixedZoom" type="checkbox", v-model="fixedZoom")
+      label(for="fixedZoom") Fix zoom to 
+      code {{ fixedZoom ? fixedZoomValue : zoom }}
+      br
+      label(v-if="fixedZoom && fixedZoomValue > zoom") Warning: mapbox-gl can't underzoom.
       h3 Info
       InfoMapBox(:zoom="zoom")
       h3 Layers
@@ -76,6 +82,8 @@ export default {
         valueCounts: {},
         sortedValueCounts: [],
         zoom: undefined,
+        fixedZoom: undefined,
+        fixedZoomValue: undefined,
     }),
     mounted() {
         window.setTimeout(() => {
@@ -132,6 +140,17 @@ export default {
         showBoundaries() {
             window.map.showTileBoundaries = this.showBoundaries;
         },
+        fixedZoom(isFixed) {
+            const source = window.map.getSource('source');
+            if (isFixed) {
+                this.fixedZoomValue = this.zoom;
+                source.maxzoom = this.zoom;
+                source.minzoom = this.zoom;
+            } else {
+                source.maxzoom = 9;
+                source.minzoom = 0;
+            }
+        },
     },
     methods: {
         summariseAttribute(attribute, layer) {
@@ -169,8 +188,8 @@ export default {
             this.zoom = Math.floor(window.map.getZoom());
         },
         updateSource(source) {
-            this.url = "http://localhost:8080"+source+"1/1/1.pbf";
-            console.log(this.url);
+            this.url = "http://localhost:8080"+source+"0/0/0.pbf";
+            this.fixedZoom = false;
         },
         updateValues(newValues) {
             this.values = newValues;
